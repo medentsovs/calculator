@@ -10,3 +10,5 @@ class ErrorMissingRightBracket {};
 class ErrorMissingLeftBracket {};
 // Ошибка неверного ввода.
 class ErrorInvalidInput {};
+// Ошибка отрицательного факториала.
+class ErrorNegativeFactorial {};

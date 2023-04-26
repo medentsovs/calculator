@@ -66,7 +66,7 @@ void Token_stream::parsing(std::string input) {
 			}
 			tokens.push_back({ input[i], 0 });
 			break;
-		case '+': case '-': case '*': case '/': case '%': 
+		case '+': case '-': case '*': case '/': case '%': case '!':
 			tokens.push_back({ input[i], 0 });
 			break;
 		case ' ':
