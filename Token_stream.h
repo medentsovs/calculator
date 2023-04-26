@@ -34,6 +34,8 @@ public:
 // Если выражение содержит неопознанную лексему, то функция выбросит исключение ErrorUnknownToken.
 void Token_stream::parsing(std::string input) {
 	std::string num = "";
+	int brackets_left = 0;
+	int brackets_right = 0;
 	for (unsigned int i = 0; i < input.size(); i++) {
 		switch (input[i]) {
 		case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case '.': case ',':
@@ -50,7 +52,21 @@ void Token_stream::parsing(std::string input) {
 				num += input[i];
 			}
 			break;
-		case '+': case '-': case '*': case '/': case '%': case '(': case ')':
+		case '(': 
+		case '{': 
+			brackets_left++;
+			tokens.push_back({ input[i], 0 });
+			break;
+		case ')':
+		case '}':
+			brackets_right++;
+			if (brackets_right > brackets_left) {
+				tokens.clear();
+				throw ErrorMissingLeftBracket{};
+			}
+			tokens.push_back({ input[i], 0 });
+			break;
+		case '+': case '-': case '*': case '/': case '%': 
 			tokens.push_back({ input[i], 0 });
 			break;
 		case ' ':
