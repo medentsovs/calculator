@@ -12,3 +12,7 @@ class ErrorMissingLeftBracket {};
 class ErrorInvalidInput {};
 // Ошибка отрицательного факториала.
 class ErrorNegativeFactorial {};
+// Ошибка переполнения значения факториала.
+class ErrorOverflowValue {};
+// Ошибка нет начального выражения.
+class ErrorNoLeftExpression {};

@@ -10,11 +10,15 @@
 /*
  * Calculator
  * Калькулятор, который способен вычислять сложные выражения.
- * Автор Сергей Меденцов 26.04.2023
- * version 0.6.3
+ * Автор Сергей Меденцов 30.04.2023
+ * version 0.6.4
  * 
  * Что добавлено в этой версии:
- *  Добавлено вычисление факториала.
+ *  Приглашение ввода для пользователя и описание работы приложения.
+ *  Добавлен класс ошибки ErrorOverflowValue переполнение факториала.
+ *  Исправлена проблема с унарными минусом и плюсом.
+ *  Исправлена проблема деления на ноль.
+ *  Добавлена возможность ввода экспоненциального значения.
  *
  * Какие фрагменты кода могут вызвать сложности.
  *  ???
@@ -39,11 +43,12 @@
  *   Программа парсит введённую строку и разбивает её на части.
  * 
  * Каких фрагментов кода пока не хватает и какие варианты ещё не обработаны.
- *  Проблема с числами меньше ноля! Программа пока не умеет их решать.
- *  Также не реализовано чтение лексемы в экспоненциальном представлении.
  *  Интересная идея добавить в калькулятор переменные m = 9; v = 7; v * m;
  *  А так же тогда уж можно добавить и вычисление математических функций.
+ *  Готовое решение формул!
  *  Ещё можно выводить циклы!
+ *  Операторы сравнения тоже можно реализовать.
+ *  Если просто нажать Enter можно выводить какую-нибудь интересную информацию)
 */
 /*
 * РАЗМЫШЛЕНИЯ НАД ЗАДАЧЕЙ:
@@ -55,6 +60,7 @@
 double expression();
 double term();
 double primary();
+unsigned long int factorial(unsigned long int value);
 
 Token_stream ts;
 
@@ -63,31 +69,37 @@ int main() {
 
 	std::string input;
 
+	std::cout << "Calculator. version 0.6.4" << std::endl;
+	std::cout << "________________________________________________________________________________________________________________________" << std::endl;
+	std::cout << "Вы можете ввести любое выражение, используя операторы [+][-][*][/]. Для получения ответа введите [Enter]." << std::endl;
+	std::cout << "Так же можно использовать скобки [(][)][{][}] для указания порядка вычисления. Скобки идентичны, но не взаимозаменяемы!" << std::endl;
+	std::cout << "Оператор [%] используется для вычисления остатка от деления." << std::endl;
+	std::cout << "Оператор [!] используется для вычисления факториала и указывается после числа, факториал которого необходимо вычислить." << std::endl;
+	std::cout << "Введите  [#] для выхода из программы." << std::endl;
+	std::cout << "________________________________________________________________________________________________________________________" << std::endl;
+		
 	while (true) {
 		try {
-			std::cout << "Выражение: ";
+			std::cout << "\n>> ";
 			getline(std::cin, input);
+			if (input == "#") break;
+			if (input == "") {
+				std::cout << "Здесь будет интересная информация!\n";
+				continue;
+			}
 			if (!std::cin) throw ErrorInvalidInput{};
 			ts.parsing(input);
-			std::cout << "Ответ: " << expression() << std::endl;
+			std::cout << "= " << expression() << std::endl;
 		}
-		catch (ErrorUnknownToken) {
-			std::cerr << "ОШИБКА! Неизвестная лексема!\n";
-		}
-		catch (ErrorDivisionZero) {
+		catch (ErrorUnknownToken)        { std::cerr << "ОШИБКА! Неизвестная лексема!\n"; }
+		catch (ErrorInvalidInput)        { std::cerr << "ОШИБКА! Неверный ввод выражения!\n"; }
+		catch (ErrorMissingRightBracket) { std::cerr << "ОШИБКА! Нет закрывающей скобки!\n"; }
+		catch (ErrorMissingLeftBracket)  { std::cerr << "ОШИБКА! Нет открывающей скобки!\n"; }
+		catch (ErrorNegativeFactorial)   { std::cerr << "ОШИБКА! Отрицательный факториал!\n"; }
+		catch (ErrorOverflowValue)       { std::cerr << "ОШИБКА! Переполнение значения факториала!\n"; }
+		catch (ErrorNoLeftExpression)    { std::cerr << "ОШИБКА! Нет начального значения!\n"; }
+		catch (ErrorDivisionZero) { 
 			std::cerr << "ОШИБКА! Деление на ноль!\n";
-		}
-		catch (ErrorInvalidInput) {
-			std::cerr << "ОШИБКА! Неверный ввод выражения!\n";
-		}
-		catch (ErrorMissingRightBracket) {
-			std::cerr << "ОШИБКА! Нет закрывающей скобки!\n";
-		}
-		catch (ErrorMissingLeftBracket) {
-			std::cerr << "ОШИБКА! Нет открывающей скобки!\n";
-		}
-		catch (ErrorNegativeFactorial) {
-			std::cerr << "ОШИБКА! Отрицательный факториал!\n";
 		}
 	}
 
@@ -150,6 +162,7 @@ double term() {
 		{
 			double p = primary();
 			if (p == 0) {
+				ts.get();
 				throw ErrorDivisionZero{};
 			}
 			left /= p;
@@ -158,6 +171,10 @@ double term() {
 		case '%':
 		{
 			double p = primary();
+			if (p == 0) {
+				ts.get();
+				throw ErrorDivisionZero{};
+			}
 			double res = (int)left / (int)p;
 			left = left - (res * p);
 			break;
@@ -185,8 +202,10 @@ double primary() {
 			return val;
 		}
 	}
-	case '|':	// Отрицательное число
-		return 0 - t.value;
+	case '-':
+		return - primary();
+	case '+':
+		return primary();
 	case '(':	// Выражение в скобках
 	case '{':
 	{
@@ -197,7 +216,7 @@ double primary() {
 		return d;
 	}
 	default:	// Возвращаемся на предыдущую лексему
-		ts.putback();
+		throw ErrorInvalidInput{};
 	}
 }
 // Факториал
@@ -207,8 +226,33 @@ unsigned long int factorial(unsigned long int value) {
 	for (int count = value; count > 1;) {
 		value *= --count;
 	}
+	if (value <= 0) throw ErrorOverflowValue{};
 	return value;
 }
 
  /* ФУНКЦИИ, РЕАЛИЗУЮЩИЕ ГРАММАТИКУ ВЫРАЖЕНИЙ*/
 /********************************************/
+
+/* TESTS
+1+2+3+4+5+6+7+8
+1-2-3-4
+!+2
+(1+3
+(1+)
+1*2/3%4+5-6
+()
+1+
++1
+1/0
+1++2
+-2
+1234567890123456
+'a'
+1+#
+1+2 #
+Mary had a little lamb
+srtvrqtiewcbet7rewaewre-wqcntrretewru754389652743nvcqnwq;
+!@#$%^&*()~:;
+2.14748e+09
+#
+*/
