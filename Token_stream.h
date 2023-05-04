@@ -1,7 +1,9 @@
 #pragma once
+
 #include <vector>
 #include <string>
 #include "Token.h"
+#include "Variables_stream.h"
 
 /*
  * Ввод пользователя необходимо разложить на лексемы:
@@ -21,6 +23,10 @@ private:
 	int index = 0;
 	// Лексемы хранятся здесь.
 	std::vector<Token> tokens;
+	// Переменные.
+	Variables_stream vars;
+	// Индикатор объявления переменной.
+	bool declaration = false;
 public:
 	const std::string clear_whitespaces(std::string input);
 	void parsing(std::string input);
@@ -28,4 +34,9 @@ public:
 	// Возвращает индекс на предыдущую позицию.
 	void putback() { index--; }
 	const void show_tokens();
+
+
+	const bool get_declaration() { return declaration; }
+	void set_declaration(bool declaration) { this->declaration = declaration; }
+	const Variables_stream get_variable() { return vars; }
 };

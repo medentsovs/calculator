@@ -128,13 +128,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="calculator.cpp" />
+    <ClCompile Include="constants.h" />
     <ClCompile Include="Token_stream.cpp" />
+    <ClCompile Include="Variables_stream.cpp" />
     <ClCompile Include="versions.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="errors.h" />
     <ClInclude Include="Token.h" />
     <ClInclude Include="Token_stream.h" />
+    <ClInclude Include="Variables.h" />
+    <ClInclude Include="Variables_stream.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

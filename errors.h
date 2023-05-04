@@ -16,3 +16,5 @@ class ErrorNegativeFactorial {};
 class ErrorOverflowValue {};
 // Ошибка нет начального выражения.
 class ErrorNoLeftExpression {};
+// Ошибка переменная не определена.
+class ErrorNoVariable {};
