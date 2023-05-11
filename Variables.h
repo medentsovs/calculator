@@ -5,7 +5,7 @@ class Variables
 {
 public:
 	// Название переменной
-	char name;
+	std::string name = "";
 	// Значение переменной
 	double value;
 };

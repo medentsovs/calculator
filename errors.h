@@ -1,20 +1,11 @@
 #pragma once
 
-// Ошибка деления на ноль.
-class ErrorDivisionZero {};
-// Ошибка неизвестной лексемы.
-class ErrorUnknownToken {};
-// Ошибка пропущенной закрывающей скобки.
-class ErrorMissingRightBracket {};
-// Ошибка пропущенной открывающей скобки.
-class ErrorMissingLeftBracket {};
-// Ошибка неверного ввода.
-class ErrorInvalidInput {};
-// Ошибка отрицательного факториала.
-class ErrorNegativeFactorial {};
-// Ошибка переполнения значения факториала.
-class ErrorOverflowValue {};
-// Ошибка нет начального выражения.
-class ErrorNoLeftExpression {};
-// Ошибка переменная не определена.
-class ErrorNoVariable {};
+class ErrorDivisionZero {};			// Деление на ноль.
+class ErrorUnknownToken {};			// Неизвестная лексема.
+class ErrorMissingRightBracket {};	// Пропущенная закрывающая скобка.
+class ErrorMissingLeftBracket {};	// Пропущенная открывающая скобка.
+class ErrorInvalidInput {};			// Неверный ввод.
+class ErrorNegativeFactorial {};	// Отрицательный факториал.
+class ErrorOverflowValue {};		// Переполнение значения факториала.
+class ErrorNoLeftExpression {};		// Нет начального выражения.
+class ErrorNoVariable {};			// Переменная не определена.

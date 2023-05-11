@@ -18,17 +18,11 @@
     <ClCompile Include="calculator.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="versions.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="Token_stream.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="Variables_stream.cpp">
+    <ClCompile Include="Variables_stack.cpp">
       <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="constants.h">
-      <Filter>Файлы заголовков</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -44,7 +38,10 @@
     <ClInclude Include="Variables.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="Variables_stream.h">
+    <ClInclude Include="Variables_stack.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="constans.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
