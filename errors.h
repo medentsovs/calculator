@@ -9,3 +9,4 @@ class ErrorNegativeFactorial {};	// Отрицательный факториал.
 class ErrorOverflowValue {};		// Переполнение значения факториала.
 class ErrorNoLeftExpression {};		// Нет начального выражения.
 class ErrorNoVariable {};			// Переменная не определена.
+class ErrorNumberVariable {};		// Название переменной не может содержать цифры.
