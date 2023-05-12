@@ -1,7 +1,7 @@
 #pragma once
 
 const std::string   TITLE = "Calculator";
-const std::string VERSION = "0.7.1";
+const std::string VERSION = "0.7.2";
 
 // Константы, которые представляют сами себя: + - * / %  ( ) { }
 const char         NUMBER = 'N';	// Константа используется программой и используется для обозначения цифры в стеке лексем.

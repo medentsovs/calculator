@@ -4,12 +4,15 @@
 #include "Variables.h"
 #include "Variables_stack.h"
 
-class Token_stream {
-	// Индекс лексемы, на которой находятся функции грамматических выражений.
-	int index = 0;
-	// Лексемы хранятся здесь.
+class Token_stream {	
+	int index = 0; // Индекс лексемы, на которой находятся функции грамматических выражений.
 	std::vector<Token> tokens;
-	std::vector<Variables> vars;
+
+	std::string number   = "";
+	std::string variable = "";
+	int brackets_left    = 0;
+	int brackets_right   = 0;
+	bool exhibitor       = false;
 public:
 	const std::string clear_whitespaces(std::string input);
 	void parsing(std::string input, Variables_stack& vs);
@@ -17,6 +20,17 @@ public:
 	// Возвращает индекс на предыдущую позицию.
 	void putback() { index--; }
 	const void show_tokens();
+
+	// Функции, используемые функцией parsing().
+	void add_exhibitor();
+	void this_exhibitor(char sign_current);
+	void add_exhibitor_sign(char sign_current);
+	void add_variable(Variables_stack& vs, char sign_plus_one);
+	void add_value_of_variable(Variables_stack& vs, char sign_plus_one);
+	void add_value_of_number(char sign_current, char sign_plus_one);
+	void start_bracket(char sign_current);
+	void end_bracket(char sign_current, char sign_plus_one);
+	void add_operator(int index, char sign_first_element, char sign_current);
 };
 
 
