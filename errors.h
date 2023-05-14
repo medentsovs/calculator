@@ -11,3 +11,5 @@ class ErrorNoLeftExpression {};		// Нет начального выражения.
 class ErrorNoVariable {};			// Переменная не определена.
 class ErrorNumberVariable {};		// Название переменной не может содержать цифры.
 class ErrorNotComparison {};		// Сравнить можно только два числа или две переменных. Результат сравнения не может быть присвоен переменной.
+class ErrorConstantInitial {};		// Нельзя присвоить значение константе.
+class ErrorNotLetter {};			// Нельзя использовать данную букву для названия переменной.

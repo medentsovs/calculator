@@ -128,13 +128,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="calculator.cpp" />
+    <ClCompile Include="Constants_stack.cpp" />
+    <ClCompile Include="Function.cpp" />
+    <ClCompile Include="Functions_stack.cpp" />
     <ClCompile Include="tests.cpp" />
     <ClCompile Include="Token_stream.cpp" />
     <ClCompile Include="Variables_stack.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="constans.h" />
+    <ClInclude Include="Constants_stack.h" />
     <ClInclude Include="errors.h" />
+    <ClInclude Include="Function.h" />
+    <ClInclude Include="Functions_stack.h" />
     <ClInclude Include="Token.h" />
     <ClInclude Include="Token_stream.h" />
     <ClInclude Include="Variables.h" />

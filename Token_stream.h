@@ -3,6 +3,8 @@
 #include "Token.h"
 #include "Variables.h"
 #include "Variables_stack.h"
+#include "Constants_stack.h"
+#include "Functions_stack.h"
 
 class Token_stream {	
 	int index = 0; // Индекс лексемы, на которой находятся функции грамматических выражений.
@@ -26,12 +28,13 @@ public:
 	void add_exhibitor();
 	void this_exhibitor(char sign_current);
 	void add_exhibitor_sign(char sign_current);
-	void add_variable(Variables_stack& vs, char sign_plus_one);
-	void add_value_of_variable(Variables_stack& vs, char sign_plus_one);
+	void add_variable(Variables_stack& vs, Functions_stack fs, char sign_plus_one);
+	void add_value_of_variable(Variables_stack& vs, Constants_stack cs, Functions_stack fs, char sign_plus_one);
 	void add_value_of_number(char sign_current, char sign_plus_one);
 	void start_bracket(char sign_current);
 	void end_bracket(char sign_current, char sign_plus_one);
 	void add_operator(int index, char sign_first_element, char sign_current);
+	void add_function(double index);
 };
 
 
