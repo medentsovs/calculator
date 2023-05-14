@@ -19,6 +19,7 @@ public:
 	Token get();
 	// Возвращает индекс на предыдущую позицию.
 	void putback() { index--; }
+	void index_reset() { index = 0; }
 	const void show_tokens();
 
 	// Функции, используемые функцией parsing().

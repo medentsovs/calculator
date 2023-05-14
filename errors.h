@@ -10,3 +10,4 @@ class ErrorOverflowValue {};		// Переполнение значения факториала.
 class ErrorNoLeftExpression {};		// Нет начального выражения.
 class ErrorNoVariable {};			// Переменная не определена.
 class ErrorNumberVariable {};		// Название переменной не может содержать цифры.
+class ErrorNotComparison {};		// Сравнить можно только два числа или две переменных. Результат сравнения не может быть присвоен переменной.

@@ -129,6 +129,7 @@ void Token_stream::add_value_of_number(char sign_current, char sign_plus_one) {
 void Token_stream::parsing(std::string input, Variables_stack& vs) {
 	this->brackets_left = this->brackets_right = 0;
 	this->variable = this->number = "";
+	int comparison = 0;
 	input = this->clear_whitespaces(input);
 
 	for (unsigned long int i = 0; i < input.size(); i++) {
@@ -145,8 +146,11 @@ void Token_stream::parsing(std::string input, Variables_stack& vs) {
 			// Если символ является последним символом в разбираемой строке ИЛИ
 			// Следующий символ не является буквой, но является знаком присваивания переменной,
 			// то добавляем переменную в поток лексем.
-			if (i == input.size() - 1 || !isalpha(input[i + 1]) && input[i + 1] == INITIAL) {
+			if (i == input.size() - 1 || !isalpha(input[i + 1]) && (input[i + 1] == INITIAL && input[i + 2] != INITIAL)) {
 				this->add_variable(vs, input[i + 1]);
+			}
+			else if (i == input.size() - 1 || !isalpha(input[i + 1]) && (input[i + 1] == INITIAL && input[i + 2] == INITIAL)) {
+				this->add_value_of_variable(vs, input[i + 1]);
 			}
 			// Следующий символ не является буквой и не является знаком присваивания переменной,
 			// то получаем значение переменной и добавляем значение в поток лексем.
@@ -155,6 +159,10 @@ void Token_stream::parsing(std::string input, Variables_stack& vs) {
 			}
 			break;
 		case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case '.': case ',':
+			if (input[i + 1] == '=' && input[i + 2] != '=') {
+				this->tokens.clear();
+				throw ErrorInvalidInput{};
+			}
 			// Если символ является последним символом в разбираемой строке ИЛИ
 			// Следующий символ не является цифрой и не является точкой и не является символом экспоненты 'e',
 			// то добавляем число в поток лексем.
@@ -185,9 +193,20 @@ void Token_stream::parsing(std::string input, Variables_stack& vs) {
 		case '}':
 			this->end_bracket(input[i], input[i + 1]);
 			break;
-		case '+': case '-': case '*': case '/': case '%': case INITIAL: case FACTORIAL:
+		case '+': case '-': case '*': case '/': case '%': case '>': case '<': case INITIAL: case FACTORIAL:
 			if (i > 0 && (input[i - 1] == EXHIBITOR && exhibitor)) {
 				this->add_exhibitor_sign(input[i]);
+				continue;
+			}
+			if (input[i] == '>' || input[i] == '<' || input[i] == INITIAL) {
+				if (++comparison > 1) {
+					this->tokens.clear();
+					throw ErrorNotComparison{};
+				}
+			}
+			if (input[i] == INITIAL && input[i + 1] == INITIAL) {
+				this->add_operator(i, input[0], EQUALLY);
+				i++;
 				continue;
 			}
 			this->add_operator(i, input[0], input[i]);
