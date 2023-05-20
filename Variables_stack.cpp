@@ -1,3 +1,4 @@
+/*
 #include <iostream>
 #include <vector>
 #include "Variables.h"
@@ -47,3 +48,4 @@ void Variables_stack::show_variables() {
 		std::cout << v.name << " = " << v.value << std::endl;
 	}
 }
+*/

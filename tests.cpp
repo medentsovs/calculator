@@ -3,6 +3,9 @@
 1-2-3-4					// -8
 !+2						// err
 (1+3					// err
+1+3)					// err
+(-1+3)					// 2
+(+1-3)					// -2
 (1+)					// err
 1*2/3%4+5-6				// -0.333333
 ()						// err
@@ -31,6 +34,7 @@ res=variable+file-4!
 res						// 30.5
 ex=5
 ex!						// 120
+-ex!					// err
 ex=2.14748e+09
 ex						// 2.14748e+09
 30=30					// err
@@ -41,13 +45,54 @@ var1
 10<5					// 0
 10==5					// 0
 5==5					// 1
-a=10>5+10<5
-b=234+16>432-120
+a=10>5+10<5				// err
+b=234+16>432-120		// err
 234+16>432-120			// 0
-234+16>432-120<400+1
-1000000000
-5000000000
--5000000000
+234+16>432-120<400+1	// err
+1000000000				// 1e+09
+5000000000				// 5e+09
+-5000000000				// -5e+09
+34-4,50+7
+sqrt(100)				// 10
+rt(200)					// err
+sqrt(2+7) - 5			// -2
+var = pow(5, 2)
+var						// 25
+sqrt(100)=10
 0
 #
+*/
+/*
+*/
+/*
+	OPERATIONS
+
+	REPEAT
+	  ,
+	OPERATORS
+	  VARIABLE = DIGIT
+	  DIGIT
+	  DIGIT!
+	  +DIGIT
+	  -DIGIT
+	  (-DIGIT
+	  (+DIGIT
+	  DIGIT +- DIGIT
+	  DIGIT -+ DIGIT
+	  DIGIT +|-|/|*|%|>|<|== DIGIT
+	  DIGIT)
+	  FUNCTION(
+	DIGIT
+	  NUMBER
+	  VARIABLE = CONSTANT = FUNCTION
+	VARIABLE = CONSTANT = FUNCTION
+	  letter
+	  letter_
+	  letter number
+	  letter_number
+	NUMBER
+	  number
+	  number.number
+	  number.numberE+number
+	  number.numberE-number
 */

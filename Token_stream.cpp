@@ -1,3 +1,4 @@
+/*
 #include <iostream>
 #include <string>
 
@@ -273,3 +274,4 @@ const void Token_stream::show_tokens() {
 		std::cout << t.kind << " = " << t.value << std::endl;
 	}
 }
+*/

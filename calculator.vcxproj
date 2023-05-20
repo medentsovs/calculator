@@ -136,7 +136,7 @@
     <ClCompile Include="Variables_stack.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="constans.h" />
+    <ClInclude Include="constants.h" />
     <ClInclude Include="Constants_stack.h" />
     <ClInclude Include="errors.h" />
     <ClInclude Include="Function.h" />
