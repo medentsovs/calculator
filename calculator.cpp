@@ -7,17 +7,20 @@
 #include "Token.h"
 #include "Token_stream.h"
 #include "Variables_stack.h"
-
-const std::string   TITLE = "Calculator";
-const std::string VERSION = "0.8";
+#include "Information.h"
+//#include "Functions.h"
 
 /*
+* Дошёл до реализации Римских чисел и запоролся. Решил переписать программу и в новой версии убрать глобальные переменные.
+* 
  * Calculator
  * Калькулятор, который способен вычислять сложные выражения.
- * Автор Сергей Меденцов 15.05.2023-20.05.2023
- * version 0.8
+ * Автор Сергей Меденцов 20.05.2023-27.05.2023
+ * version 0.8.1
  *
  * Что добавлено в этой версии:
+ *  Добавлена возможность вывода интересной информации.
+ *  Сделан рефакторинг кода
  *
  * Основные идеи проекта.
  *  Простой, но эффективный калькулятор, который может решать сложные примеры,
@@ -32,14 +35,13 @@ const std::string VERSION = "0.8";
  * Какие фрагменты кода могут вызвать сложности.
  *
  * Каких фрагментов кода пока не хватает и какие варианты ещё не обработаны.
- *  Если просто нажать Enter можно выводить какую-нибудь интересную информацию)
- *  Готовое решение формул!
+ *  Убрать по возможности глобальные переменные.
+ *  Готовое решение формул! (Римские цифры | Меры длины | Меры массы | Количество диагоналей в многоугольнике)
  *  Ещё можно выводить циклы!
  *  Подумать, как можно выводить цифры без экспоненты и при переполнении типа значения тоже выводить корректные цифры.
 */
 /*
 * РАЗМЫШЛЕНИЯ НАД ЗАДАЧЕЙ:
-*  
 * - Краткое изложение идеи, лежащей в основе решения.
 * - Найти изъяны в своей первой идее.
 * - Обсудить задачу и способы её решения с друзьями.
@@ -55,18 +57,23 @@ void     show_tip();
 void     show_result(int is_init, bool is_comp, double res);
 void     comparison_result(double x);
 
-
 double   initial(int& init, bool& comp);
 double   comparison(bool& comp);
 double   expression();
 double   term();
 double   primary();
 long int factorial(long int value);
+std::vector<double> get_function_params(double func_index);
+double functions(std::string func_name, std::vector<double> params);
 
 /***********************************************************************************************************************************************/
 
+std::vector<char> specsymbols{ INITIAL, FACTORIAL, EXIT, NEXT, '+', '-', '*', '/', '%', '>', '<', '(', ')', '{', '}', '[', ']' };
+std::vector<char> hotkeys{ SHOWVARS, SHOWCONSTS, SHOWFUNCS, HELP };
+
 Token_stream ts;
-//Variables_stack vs;
+Information info;
+Variables_stack vs;
 
 int main() {
 	setlocale(LC_ALL, "Russian");
@@ -79,6 +86,7 @@ int main() {
 }
 
 /***********************************************************************************************************************************************/
+
 // Функция выводит в консоль описание работы и горячие клавиши программы.
 void help() {
 	std::cout << "========================================================================================================================" << std::endl;
@@ -102,7 +110,7 @@ void help() {
 	std::cout << "Так же есть несколько определённых функций, таких как вычислить корень выражения sqrt()" << std::endl;
 	std::cout << "Введите  [" << SHOWFUNCS << "] для просмотра определённых функций." << std::endl;
 	std::cout << "------------------------------------------------------------------------------------------------------------------------" << std::endl;
-	std::cout << "Введите  [" << HELP << "] для вывода этой информации." << std::endl;
+	std::cout << "Введите  [" << HELP << "] для вывода этой информации ещё раз." << std::endl;
 	std::cout << "Введите  [" << EXIT << "] для выхода из программы." << std::endl;
 	std::cout << "========================================================================================================================" << std::endl;
 }
@@ -114,20 +122,20 @@ void help() {
 void launch() {
 	while (true) {
 		try {
-			int init = 0;	// Если происходит инициализация переменной в программе, то флаг будет равен true. За это отвечает функция initial().
+			int init = 0;		// Если происходит инициализация переменной в программе, то счётчик увеличивается, потому как можно инициализировать несколько переменных.
 			bool comp = false;	// Если происходит сравнение двух значений, то флаг станет равным true. За это отвечает функция comparison().
 			std::string input;	// Ввод пользователя.
 
 			std::cout << "\n" << INPUT;
 			getline(std::cin, input);
 
-			if (input.size() == 1) 
+			if (input.size() == 1)
 			{
 				bool res = show_data(input[0]);
-				if (!res) break;			// Выход из программы.
-				else if(res != 1) continue; 
+				if (!res) break;
 				// Если res будет равен одному, значит переданной команды не существует и следует продолжить выполнять функцию launch,
 				// а не возвращаться к вводу пользователя.
+				else if(res != 1) continue; 
 			}
 			if (input == "") {
 				show_tip();
@@ -137,44 +145,56 @@ void launch() {
 
 			ts.parsing(input);
 
-			ts.show_tokens();
+//			ts.show_tokens();
 
 			double res = initial(init, comp);
 			show_result(init, comp, res);
 		}
+		// ОБЩИЕ ОШИБКИ
 		catch (ErrorInvalidInput)        { std::cerr << "ОШИБКА! Неверный ввод выражения!\n"; }
-		catch (ErrorDefinedVariables)    { std::cerr << "ОШИБКА! Невозможно отобразить определённые в программе переменные!\n"; }
-		catch (ErrorConstantInitial)     { std::cerr << "ОШИБКА! Нельзя присвоить значение константе. Данное имя используется системой.\n"; }
-		catch (ErrorFunctionInitial)     { std::cerr << "ОШИБКА! Нельзя присвоить значение функции. Данное имя используется системой.\n"; }
-		catch (ErrorDivisionZero)        { std::cerr << "ОШИБКА! Деление на ноль!\n"; }
 		catch (ErrorUnknownToken)        { std::cerr << "ОШИБКА! Неизвестная лексема!\n"; }
 		catch (ErrorMissingLeftBracket)  { std::cerr << "ОШИБКА! Нет открывающей скобки!\n"; }
-		catch (ErrorNotComparison)       { std::cerr << "ОШИБКА! Сравнить можно только два числа или две переменных! \nРезультат сравнения не может быть присвоен переменной!\n"; }
-		catch (ErrorDigitalNotEqually)   { std::cerr << "ОШИБКА! Число не может хранить значение. Присвойте значение переменной!\n"; }
-		catch (ErrorNoVariable)          { std::cerr << "ОШИБКА! Переменная не определена!\n"; }
 		catch (ErrorMissingRightBracket) { std::cerr << "ОШИБКА! Нет закрывающей скобки!\n"; }
 		catch (ErrorNoLeftExpression)    { std::cerr << "ОШИБКА! Нет начального значения!\n"; }
 		catch (ErrorUseNext)             { std::cerr << "ОШИБКА! Чтобы присвоить значения нескольким переменным в одной строке используйте символ [" << NEXT << "] между выражениями!\n"; }
-		catch (ErrorNegativeFactorial)   { std::cerr << "ОШИБКА! Отрицательный факториал!\n"; }
-		catch (ErrorOverflowValue)       { std::cerr << "ОШИБКА! Переполнение значения факториала!\n"; }
-		catch (ErrorNoMultiExpression)   { std::cerr << "ОШИБКА! Выполнить в одной строке можно только одно выражение, но в одной строке можно присвоить значения нескольким переменным!\n"; }
+		catch (ErrorNoMultiExpression)   { std::cerr << "ОШИБКА! В одной строке можно выполнить одно выражение, если выражение не является присвоением значения переменной!\n"; }
+		// ОШИБКИ ПЕРЕМЕННЫХ, КОНСТАНТ И ФУНКЦИЙ
+		catch (ErrorNoVariable)          { std::cerr << "ОШИБКА! Переменная не определена!\n"; }
+		catch (ErrorDefinedVariables)    { std::cerr << "ОШИБКА! Невозможно отобразить определённые в программе переменные!\n"; }
+		catch (ErrorConstantInitial)     { std::cerr << "ОШИБКА! Нельзя присвоить значение константе. Данное имя используется системой.\n"; }
+		catch (ErrorFunctionInitial)     { std::cerr << "ОШИБКА! Нельзя присвоить значение функции. Данное имя используется системой.\n"; }
 		catch (ErrorIvalidEqually)       { std::cerr << "ОШИБКА! Не верное присваивание!\n"; }
+		// ОШИБКИ ЧИСЕЛ
+		catch (ErrorDivisionZero)        { std::cerr << "ОШИБКА! Деление на ноль!\n"; }
+		catch (ErrorDigitalNotEqually)   { std::cerr << "ОШИБКА! Число не может хранить значение. Присвойте значение переменной!\n"; }
+		catch (ErrorNegative)            { std::cerr << "ОШИБКА! Передано отрицательное значение!\n"; }
+		catch (ErrorOverflowValue)       { std::cerr << "ОШИБКА! Переполнение значения факториала!\n"; }
+		catch (ErrorBadRomanInput)       { std::cerr << "ОШИБКА! Неверный ввод Римских цифр!\n"; }
+		catch (ErrorRomanNotCorrect)     { std::cerr << "ОШИБКА! Функция roman() ожидает либо Римские либо Арабские цифры!\n"; }
+		catch (ErrorNotArgumentFunction) { std::cerr << "ОШИБКА! Функция ожидает аргумента. Пропущен аргумент функции.\n"; }
+		// ОШИБКИ СРАВНЕНИЯ
+		catch (ErrorNotComparison)       { std::cerr << "ОШИБКА! Сравнить можно только два числа или две переменных! \nРезультат сравнения не может быть присвоен переменной!\n"; }
+		// ОШИБКИ РАБОТЫ С ФАЙЛАМИ
+		catch (ErrorNotFile)             { std::cerr << "ОШИБКА! Не возможно прочитать файл с советами: files/tips.txt\n"; }
+		catch (ErrorEmptyFile)           { std::cerr << "ОШИБКА! Файл с советами пустой!\n"; }
 	}
 }
 
+// char ch - символ, который означает горячую клавишу.
 // Специальные команды вывода данных, таких как определённых переменных, констант или функций.
 // Функция вернёт 1, если переданной команды не существует и 0, если команда означает выход из программы.
+// Иначе show_data() вызовет специальную функцию, соответствующую переданному символу.
 bool show_data(char ch) {
 	if (ch == EXIT) return false;
 	switch (ch) {
 	case SHOWVARS:
-		vs.show_variables('V');
+		vs.show_variables(SHOWVARS);
 		break;
 	case SHOWCONSTS:
-		vs.show_variables('C');
+		vs.show_variables(SHOWCONSTS);
 		break;
 	case SHOWFUNCS:
-		vs.show_variables('F');
+		vs.show_variables(SHOWFUNCS);
 		break;
 	case HELP:
 		help();
@@ -184,11 +204,17 @@ bool show_data(char ch) {
 	}
 }
 
-// Выводит разные советы в консоль.
+// Выводит рандомные советы, описанные в классе Information, в консоль.
 void show_tip() {
-	std::cout << "Здесь будет интересная информация!\n";
+	std::cout << "ИНТЕРЕСНАЯ ИНФОРМАЦИЯ:" << std::endl;
+	std::cout << "------------------------------------------------------------------------------------------------------------------------" << std::endl;
+	std::cout << info.get_tip();
+	std::cout << "------------------------------------------------------------------------------------------------------------------------" << std::endl;
 }
 
+// int is_init - целочисленное значение, содержащее количество инициализированных переменных. ini(Initialization)
+// bool is_comp - было ли произведено сравнение чисел? comp(Comparison)
+// res - аргумент содержащий результат выражения и предназначен для вывода в консоль. res(Result)
 // Выводит в консоль результат выражения или надпись о выполнении программой определённого действия, например "инициализации переменной".
 void show_result(int is_init, bool is_comp, double res) {
 	if (is_comp) {
@@ -198,24 +224,22 @@ void show_result(int is_init, bool is_comp, double res) {
 	if (!is_init)
 		std::cout << RESULT << res << std::endl;
 	else {
-		if(is_init == 1)
-			std::cout << "Переменная инициализирована. Чтобы посмотреть список имеющихся переменных введите символ [" << SHOWVARS << "]\n";
+		if (is_init == 1)
+			std::cout << "Переменная инициализирована. ";
 		else 
-			std::cout << "Переменные инициализированы. Чтобы посмотреть список имеющихся переменных введите символ [" << SHOWVARS << "]\n";
+			std::cout << "Переменные инициализированы. ";
+		std::cout << "Чтобы посмотреть список имеющихся переменных введите символ[" << SHOWVARS << "]\n";
 	}
 }
 
+// x - это значение типа double, но представляет из себя булево выражение 1-true, 0-false.
 // Выводит в стандартный поток вывода ответ, верно ли сравнение.
-// Аргумент - это булево выражение 1-true, 0-false.
 void comparison_result(double x) {
-	if (x) {
-		std::cout << RESULT << "Сравнение верно" << std::endl;
-	}
-	else {
-		std::cout << RESULT << "Сравнение не верно" << std::endl;
-	}
+	if (x) std::cout << RESULT << "Сравнение верно"    << std::endl;
+	else   std::cout << RESULT << "Сравнение не верно" << std::endl;
 }
 
+// ch - любой символ.
 // Определяет, есть ли переданный параметру символ в глобальном массиве спецсимволов.
 // Возвращает true - если есть, false - если нет.
 bool isspecsymbol(char ch) {
@@ -224,12 +248,17 @@ bool isspecsymbol(char ch) {
 	}
 	return false;
 }
+
+// ch - любой символ.
+// Определяет, есть ли переданный параметру символ в глобальном массиве горячих клавиш.
+// Возвращает true - если есть, false - если нет.
 bool ishotkey(char ch) {
 	for (char c : hotkeys) {
 		if (c == ch) return true;
 	}
 	return false;
 }
+
 /***********************************************************************************************************************************************/
 
 /***********************************************************************************************************************************************/
@@ -251,7 +280,6 @@ bool ishotkey(char ch) {
 * Терм:
 *	Первичное_выражение
 *	Первичное_выражение!			// Факториал
-*   FUNCTION Первичное_выражение	// Определённая функция
 *	Терм "*" Первичное_выражение	// Умножение
 *	Терм "/" Первичное_выражение	// Деление
 *	Терм "%" Первичное_выражение	// Остаток (деление по модулю)
@@ -261,7 +289,8 @@ bool ishotkey(char ch) {
 *	Число
 *   -Число
 *   +Число
-*	"(" Выражение ")"	// Группировка
+*	"(" Выражение ")"				// Группировка
+*   FUNCTION(Первичное_выражение)	// Определённая функция
 * Константа:
 *   строковый_литерал
 * Переменная:
@@ -270,7 +299,10 @@ bool ishotkey(char ch) {
 *	Литерал_с_плавающей_точкой
 */
 
-// Инициализация переменной.
+// &init - счётчик инициализации переменной. То есть, если инициализируется переменная, то переменная увеличивается на один.
+// &comp - флаг, принимающий значение true, если выражение содержало сравнение чисел.
+// Определяет, было ли присвоено выражение переменной или нет.
+// Меняет значение своих параметров.
 double initial(int& init, bool &comp) {
 	Token t = ts.get();
 	if (t.kind == INITVAR) {
@@ -312,7 +344,11 @@ double initial(int& init, bool &comp) {
 		return comparison(comp);
 	}
 }
-// Сравнение выражений.
+
+// comp - булев тип, отвечающий на вопрос, является ли лексема сравнением чисел.
+// Проверяет, является ли лексема сравнением чисел и работает с операторами '>', '<', РАВНО, ЗАПЯТОЙ.
+// Если два выражения, отделённые запятой, не являются инициализацией переменной, то выбрасывает исключение.
+// Возвращает результат сравнения 0 - false | 1 - true | число, если операция не является сравнением.
 double comparison(bool &comp) {
 	double left = expression();
 	Token t;
@@ -340,7 +376,8 @@ double comparison(bool &comp) {
 		}
 	}
 }
-// Функция проверяет, является ли лексема выражением.
+
+// Функция проверяет, является ли лексема выражением и возвращает значение.
 // И работает с операторами '+' и '-'.
 double expression() {
 	double left = term();
@@ -360,8 +397,10 @@ double expression() {
 		}
 	}
 }
-// Функция проверяет, является ли лексема термом.
-// И работает с операторами '*', '/', '%'
+
+// Функция проверяет, является ли лексема слагаемым и возвращает значение слагаемого.
+// И работает с операторами '*', '/', '%' и факториал.
+// Если лексема не подходит не под одну константу, то возвращает значени.
 double term() {
 	double left = primary();
 	Token t;
@@ -371,35 +410,38 @@ double term() {
 		case '*':
 			left *= primary();
 			break;
-		case '/':
-		{
-			double d = primary();
-			if (d == 0) {
+		case '/': {
+			double digit = primary();
+			if (digit == 0) {
 				ts.get();
 				throw ErrorDivisionZero{};
 			}
-			left /= d;
+			left /= digit;
 			break;
 		}
-		case '%':
-		{
-			double d = primary();
-			if (d == 0) {
+		case '%': {
+			double digit = primary();
+			if (digit == 0) {
 				throw ErrorDivisionZero{};
 			}
-			double res = (int)left / (int)d;
-			left = left - (res * d);
+			double res = (int)left / (int)digit;
+			left = left - (res * digit);
 			break;
 		}
 		case FACTORIAL:
-			return factorial((unsigned long int)left);		
+			return factorial((unsigned long int)left);
 		default:
-			ts.putback();	// Возвращаемся на предыдущую лексему
+			ts.putback();
 			return left;
 		}
 	}
 }
+
 // Функция проверяет, является ли лексема первичным выражением и возвращает это значение.
+// Если лексема является вызовом функции, то вызывает эту функцию.
+// Если лексема является скобками, то вычисляет выражение в скобках и возвращает значение.
+// Если нет закрывающей скобки, выбрасывает исключение.
+// Если лексема не является частью программы, то выбрасывает исключение.
 double primary() {
 	Token t = ts.get();
 	switch (t.kind) {
@@ -408,52 +450,70 @@ double primary() {
 	case CONSTANTS:
 	case VARIABLE:
 		return vs.get_variable(t.value);
+	case ROMAN:
+		return 0;
 	case '-':
 		return -primary();
 	case '+':
 		return primary();
 	case '(':
-	case '{':
-	{
-		double d = expression();
+	case '{': {
+		double res = expression();
 		t = ts.get();
 		if (t.kind != ')' && t.kind != '}') throw ErrorMissingRightBracket{};
-		return d;
+		return res;
 	}
 	case FUNCTIONS: {
-		std::string name = vs.get_name(t.value);
-		int args = vs.get_variable(t.value);
-		std::vector<double> params;
-		int i = 0;
-		while (i < args) {
-			t = ts.get();
-			if (t.kind == NEXT) {
-				continue;
-			}
-			if (i > 0) ts.putback();
-			params.push_back(expression());
-			i++;
-		}
-		if (name == "sqrt") {
-			t = ts.get();
-			if (t.kind != ')') throw ErrorMissingRightBracket{};
-			return sqrt(params[0]);
-		}
-		else if (name == "pow") {
-			t = ts.get();
-			if (t.kind != ')') throw ErrorMissingRightBracket{};
-			return pow(params[0], params[1]);
-		}
-		break;
+		std::string func_name = vs.get_name(t.value);
+		std::vector<double> params = get_function_params(t.value);
+		t = ts.get();
+		if (t.kind != ')') throw ErrorMissingRightBracket{};
+		return functions(func_name, params);
 	}
 	default:
 		throw ErrorInvalidInput{};
 	}
 }
-// Факториал
+
+// func_index - индекс, по которому константная функция находится в массиве констант.
+// Возвращает значения параметров, передаваемые в константную функцию.
+std::vector<double> get_function_params(double func_index) {
+	std::vector<double> params;
+	int func_args = vs.get_variable(func_index);
+	int args_index = 0;
+	while (args_index < func_args) {
+		Token t = ts.get();
+		if (t.kind == NEXT) continue;
+		if (args_index > 0) ts.putback();
+		params.push_back(expression());
+		args_index++;
+	}
+	return params;
+}
+
+// func_name - название функции, которую следует вызвать из стека переменных.
+// params - значения аргументов вызываемой функции.
+// По названию функции подставляет переданные параметры и возвращает результат работы функции.
+double functions(std::string func_name, std::vector<double> params) {
+	//Functions f;
+	if (func_name == "sqrt") {
+		if (params[0] < 1) throw ErrorNegative{};
+		return sqrt(params[0]);
+	}
+	else if (func_name == "pow") {
+		return pow(params[0], params[1]);
+	}
+	/*else if (func_name == "roman") {
+		return f.roman(vs.get_roman());
+	}*/
+}
+
+// value - число, большее или равное 0.
+// Возвращает факториал числа.
+// Если число меньше ноля или превышает максимально допустимое число системы, то выбросит исключение.
 long int factorial(long int value) {
 	if (value == 0) return 1;
-	if (value < 0) throw ErrorNegativeFactorial{};
+	if (value < 0) throw ErrorNegative{};
 	for (int count = value; count > 1;) {
 		value *= --count;
 	}

@@ -61,38 +61,16 @@ var						// 25
 sqrt(100)=10
 0
 #
+roman()
+sqrt()
+roman(VIII
+roman(
+roman(XIV)
+roman(XIX)
+roman(DCCCIII)			// 843
 */
-/*
-*/
-/*
-	OPERATIONS
 
-	REPEAT
-	  ,
-	OPERATORS
-	  VARIABLE = DIGIT
-	  DIGIT
-	  DIGIT!
-	  +DIGIT
-	  -DIGIT
-	  (-DIGIT
-	  (+DIGIT
-	  DIGIT +- DIGIT
-	  DIGIT -+ DIGIT
-	  DIGIT +|-|/|*|%|>|<|== DIGIT
-	  DIGIT)
-	  FUNCTION(
-	DIGIT
-	  NUMBER
-	  VARIABLE = CONSTANT = FUNCTION
-	VARIABLE = CONSTANT = FUNCTION
-	  letter
-	  letter_
-	  letter number
-	  letter_number
-	NUMBER
-	  number
-	  number.number
-	  number.numberE+number
-	  number.numberE-number
+/*
+roman(DCCCIII)			// 843
+roman(XXL)				// 30
 */
